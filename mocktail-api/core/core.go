@@ -2,7 +2,6 @@ package core
 
 import (
 	"mocktail-api/database"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
