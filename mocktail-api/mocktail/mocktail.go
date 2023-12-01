@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"gorm.io/datatypes"
 )
 

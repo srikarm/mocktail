@@ -6,11 +6,12 @@ import (
 	"mocktail-api/core"
 	"mocktail-api/database"
 	"mocktail-api/mocktail"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func setupRoutes(app *fiber.App) {
@@ -33,24 +34,45 @@ func setupRoutes(app *fiber.App) {
 
 func initDatabase() {
 	var err error
-	database.DBConn, err = gorm.Open("sqlite3", "/db/apis.db")
+	// Read PostgreSQL connection details from environment variables
+	dbHost := getEnv("DB_HOST", "localhost")
+	dbPort := getEnv("DB_PORT", "5432")
+	dbUser := getEnv("DB_USER", "postgres")
+	dbPassword := getEnv("DB_PASSWORD", "postgres")
+	dbName := getEnv("DB_NAME", "apis")
+	sslMode := getEnv("SSL_MODE", "disable")
+
+	// Construct the connection string
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", dbHost, dbPort, dbUser, dbPassword, dbName, sslMode)
+	database.DBConn, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	fmt.Println("Connection Opened to Database")
-	database.DBConn.AutoMigrate(&core.Api{})
-	fmt.Println("Database Migrated")
+	fmt.Println("Connected to PostgreSQL database successfully!")
+	
+	err = database.DBConn.AutoMigrate(&core.Api{})
+	if err != nil {
+		log.Fatal("Error migrating database:", err)
+	}
 }
-// TODO: read addr from env
+
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return fallback
+	}
+	return value
+}
+
 func main() {
-	// addr := `:` + os.Getenv("PORT")
+	svcPort := getEnv("DB_PORT", "4000") 
 	app := fiber.New()
 	app.Use(cors.New())
 
 	initDatabase()
-	defer database.DBConn.Close()
+//	defer database.DBConn.Close()
 
 	setupRoutes(app)
 
-	log.Fatal(app.Listen(":4000"))
+	log.Fatal(app.Listen(":" + svcPort))
 }
