@@ -40,14 +40,14 @@ export const TOASTTYPES = {
 
 const defaultToastProps = {
   toastType: TOASTTYPES.DEFAULT,
-  message: 'Mocktail Rocks 💣💣'
+  message: 'Mocktail Rocks!'
 };
 
 export const defaultSuccessToast = {
   toastType: TOASTTYPES.SUCCESS,
-  message: 'Success 🎉🎉'
+  message: 'Success!'
 };
-export const defaultErrorToast = (message = 'Something went wrong ☹️☹️	') => {
+export const defaultErrorToast = (message = 'Something went wrong!	') => {
   return {
     toastType: TOASTTYPES.ERROR,
     message

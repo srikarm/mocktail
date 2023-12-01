@@ -17,8 +17,7 @@ type Api struct {
 }
 
 type apiResponse struct {
-	Field1 string `json:"message"`
-	Field2 string `json:""`
+	Message string `json:""`
 }
 
 type Apis struct {
@@ -35,11 +34,11 @@ func GetApis(c *fiber.Ctx) error {
 func CreateApi(c *fiber.Ctx) error {
 	api := new(Api)
 	if err := c.BodyParser(api); err != nil {
-		res := apiResponse{"message", err.Error()}
+		res := apiResponse{err.Error()}
 		return c.Status(503).JSON(res)
 	}
 	if err := InsertApi(api); err != nil {
-		res := apiResponse{"message", err.Error()}
+		res := apiResponse{err.Error()}
 		return c.Status(400).JSON(res)
 	}
 	return c.JSON(api)
@@ -64,10 +63,10 @@ func DeleteApiByKey(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DBConn
 	var api Api
-	res := apiResponse{"message", "completed"}
+	res := apiResponse{"completed"}
 	err := db.Unscoped().Delete(&api, "ID = ? ", id).Error
 	if err != nil {
-		res := apiResponse{"message", err.Error()}
+		res := apiResponse{err.Error()}
 		return c.Status(400).JSON(res)
 	}
 	return c.JSON(res)
@@ -82,9 +81,9 @@ func ExportApis(c *fiber.Ctx) error {
 func ImportApis(c *fiber.Ctx) error {
 
 	apis := new(Apis)
-	res := apiResponse{"message", "completed"}
+	res := apiResponse{"completed"}
 	if err := c.BodyParser(apis); err != nil {
-		res := apiResponse{"message", err.Error()}
+		res := apiResponse{err.Error()}
 		return c.Status(400).JSON(res)
 	}
 

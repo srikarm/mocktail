@@ -7,7 +7,7 @@ const TipsNTricks = ({ tip }) => {
   return (
     <Col>
       <Col>
-        <h3 className="h1dr">Tips & Tricks</h3>
+        <h3 className="h1dr">Tips </h3>
       </Col>
       <Col style={{ marginTop: '18px' }}>
         <Card>
@@ -17,7 +17,7 @@ const TipsNTricks = ({ tip }) => {
       <Col style={{ marginTop: '38px' }}>
         <Card.Title className="h1dr">Sample Request </Card.Title>
         <Card>
-          <Card.Body>{API_MOCKTAIL_URL}/your-endpoint</Card.Body>
+          <Card.Body>{API_MOCKTAIL_URL}/your-endpoint/</Card.Body>
         </Card>
       </Col>
     </Col>

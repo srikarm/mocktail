@@ -71,14 +71,14 @@ function GenerateTab(props) {
         </Form>
         <Col style={{ marginTop: '12px' }}>
           <Button type="submit" onClick={proceed}>
-            Save 👍
+            Save
           </Button>
           <Button
             disabled={false}
             style={{ marginLeft: '20px' }}
             variant="warning"
             onClick={() => clearAll()}>
-            Clear 🧹
+            Clear
           </Button>
         </Col>
       </Col>
