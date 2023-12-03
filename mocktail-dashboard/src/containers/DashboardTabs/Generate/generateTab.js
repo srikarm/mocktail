@@ -6,6 +6,7 @@ import { SAVE_API } from '../../../utils/paths';
 import { post } from '../../../utils/request';
 import PropTypes from 'prop-types';
 import { TOASTTYPES } from '../../../hooks/useToastify';
+import { MOCK_BASE } from '../../../utils/paths';
 
 const HTTP_METHODS = {
   GET: 'GET',
@@ -39,6 +40,7 @@ function GenerateTab(props) {
     const body = {
       Endpoint: endpointValue,
       Method: selectedMethod,
+      BaseURL: MOCK_BASE,
       Response: JSON.parse(responseValue)
     };
 

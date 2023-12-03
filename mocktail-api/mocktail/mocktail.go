@@ -2,27 +2,30 @@ package mocktail
 
 import (
 	"mocktail-api/database"
-	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/kataras/iris/v12"
 	"gorm.io/datatypes"
 )
 
 type Api struct {
 	ID       uint           `gorm:"primary_key;auto_increment;not_null"`
+	BaseUrl  string         `gorm:"not_null"`
 	Endpoint string         `validate:"required"`
 	Method   string         `validate:"is-method-allowed"`
 	Key      string         `gorm:"unique;not null"`
+	Qstring  string         `gorm:""`
 	Response datatypes.JSON `validate:"required"`
 }
 
-func MockApiHandler(c *fiber.Ctx) error {
-	key := strings.Replace(string(c.Request().URI().PathOriginal()), "/mocktail/", c.Method(), 1)
+func MockApiHandler(ctx iris.Context) {
 	db := database.DBConn
 	var api Api
+	// key := strings.Replace(string(ctx.Path()), "/mocktail/", ctx.Method(), 1)
+	key := ctx.Method() + ctx.Request().RequestURI
 	db.Where("key = ?", key).First(&api)
 	if api.Key == "" {
-		return c.Status(404).JSON(fiber.Map{"message": "Api not found..."})
+		ctx.StatusCode(iris.StatusBadRequest)
+		ctx.JSON(iris.Map{"message": "API not found..."})
 	}
-	return c.JSON(api.Response)
+	ctx.JSON(api.Response)
 }

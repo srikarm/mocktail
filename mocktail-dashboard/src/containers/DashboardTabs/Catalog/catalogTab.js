@@ -48,7 +48,7 @@ export default function CatalogTab(props) {
             onChange={searchHandler}
           />
           <Button onClick={exportApis} variant="outline-secondary">
-            Export {displayedApis.length} ⬇️
+            Export {displayedApis.length} △
           </Button>
         </InputGroup>
         <div className="scroller">

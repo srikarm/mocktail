@@ -13,7 +13,7 @@ const PrefixedInput = (props) => {
 
   return (
     <Col>
-      <label htmlFor="basic-url">Your Mock Endpoint</label>
+      <label htmlFor="basic-url">Mock Endpoint</label>
       <InputGroup className="mb-3">
         <DropdownButton
           variant="outline-secondary"

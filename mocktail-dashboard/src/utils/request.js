@@ -52,7 +52,7 @@ export function post(url, body) {
 }
 export function del(url, body = {}) {
   const options = {
-    method: 'Delete',
+    method: 'DELETE',
     body,
     headers: { 'Content-Type': 'application/json' }
   };

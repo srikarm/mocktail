@@ -2,51 +2,55 @@ package core
 
 import (
 	"mocktail-api/database"
+	"net/url"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	"github.com/kataras/iris/v12"
 	"gorm.io/datatypes"
 )
 
 type Api struct {
 	ID       uint           `gorm:"primary_key;auto_increment;not_null"`
+	BaseUrl  string         `gorm:"not_null"`
 	Endpoint string         `validate:"required"`
 	Method   string         `validate:"is-method-allowed"`
 	Key      string         `gorm:"unique;not null"`
+	Qstring  string			`gorm:""`
 	Response datatypes.JSON `validate:"required"`
-}
-
-type apiResponse struct {
-	Message string `json:""`
 }
 
 type Apis struct {
 	Apis []Api `validate:"required"`
 }
 
-func GetApis(c *fiber.Ctx) error {
+func GetApis(ctx iris.Context) {
 	db := database.DBConn
 	var apis []Api
 	db.Find(&apis)
-	return c.JSON(apis)
+	ctx.JSON(apis)
 }
 
-func CreateApi(c *fiber.Ctx) error {
+func CreateApi(ctx iris.Context) {
 	api := new(Api)
-	if err := c.BodyParser(api); err != nil {
-		res := apiResponse{err.Error()}
-		return c.Status(503).JSON(res)
+	if err := ctx.ReadBody(api); err != nil {
+		ctx.StopWithJSON(iris.StatusServiceUnavailable, iris.Map{"response": err.Error()})
+		return
 	}
 	if err := InsertApi(api); err != nil {
-		res := apiResponse{err.Error()}
-		return c.Status(400).JSON(res)
+		ctx.StopWithJSON(iris.StatusBadRequest, iris.Map{"response": err.Error()})
+		return
 	}
-	return c.JSON(api)
+	ctx.JSON(iris.Map{"response": "API creation has been successfull", "message": "completed"})
 }
 
 func InsertApi(api *Api) error {
 	db := database.DBConn
-	api.Key = api.Method + api.Endpoint
+	params, _ := url.Parse(api.Endpoint)
+	key := []string{api.Method,api.BaseUrl,api.Endpoint}
+	api.Key = strings.Join(key,"/")
+	api.Qstring = params.RawQuery
+//	api.Endpoint = params.Path
 	validate := validator.New()
 	validate.RegisterValidation("is-method-allowed", isApiHTTPMethodValid)
 	if err := validate.Struct(api); err != nil {
@@ -59,38 +63,36 @@ func InsertApi(api *Api) error {
 	return nil
 }
 
-func DeleteApiByKey(c *fiber.Ctx) error {
-	id := c.Params("id")
+func DeleteApiByKey(ctx iris.Context) {
+	id := ctx.Params().Get("id")
 	db := database.DBConn
 	var api Api
-	res := apiResponse{"completed"}
 	err := db.Unscoped().Delete(&api, "ID = ? ", id).Error
 	if err != nil {
-		res := apiResponse{err.Error()}
-		return c.Status(400).JSON(res)
+		ctx.StopWithJSON(iris.StatusBadRequest, iris.Map{"response": err.Error()})
+		return
 	}
-	return c.JSON(res)
+	ctx.JSON(iris.Map{"response": "API has been removed", "message": "completed"})
 }
 
-func ExportApis(c *fiber.Ctx) error {
+func ExportApis(ctx iris.Context) {
 	db := database.DBConn
 	var apis []Api
 	db.Find(&apis)
-	return c.JSON(apis)
+	ctx.JSON(apis)
 }
-func ImportApis(c *fiber.Ctx) error {
+func ImportApis(ctx iris.Context) {
 
 	apis := new(Apis)
-	res := apiResponse{"completed"}
-	if err := c.BodyParser(apis); err != nil {
-		res := apiResponse{err.Error()}
-		return c.Status(400).JSON(res)
+	if err := ctx.ReadBody(apis); err != nil {
+		ctx.StopWithJSON(iris.StatusBadRequest, iris.Map{"response": err.Error()})
+		return
 	}
 
 	for i := 0; i < len(apis.Apis); i++ {
 		InsertApi(&apis.Apis[i])
 	}
-	return c.Status(200).JSON(res)
+	ctx.JSON(iris.Map{"response": "APIs have been imported", "message": "completed"})
 }
 
 func isApiHTTPMethodValid(fl validator.FieldLevel) bool {
